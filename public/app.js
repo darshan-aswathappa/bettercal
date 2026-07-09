@@ -5,6 +5,7 @@ const els = {
   from: document.getElementById('filter-from'),
   to: document.getElementById('filter-to'),
   clearTime: document.getElementById('filter-clear-time'),
+  presets: Array.from(document.querySelectorAll('.preset')),
   style: document.getElementById('filter-style'),
   capacity: document.getElementById('filter-capacity'),
   freeNowSection: document.getElementById('free-now-section'),
@@ -46,6 +47,52 @@ function fmtDuration(ms) {
   if (h === 0) return `${m} min`;
   if (m === 0) return `${h} hr`;
   return `${h} hr ${m} min`;
+}
+
+// Format a Date as an "HH:mm" string for a <input type="time"> value.
+function toTimeInput(d) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// Turn an "HH:mm" input value into a Date on today's calendar day.
+function fromTimeInput(value) {
+  const [h, m] = value.split(':').map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+// Round a Date up to the next quarter hour, matching the pickers' 15-min step.
+function roundUpToQuarter(d) {
+  const step = 15 * 60 * 1000;
+  return new Date(Math.ceil(d.getTime() / step) * step);
+}
+
+// "Need it for N minutes": keep an existing start, else start now (rounded up),
+// then set the end N minutes later — clamped so it never spills past midnight.
+function applyPreset(minutes) {
+  const from = els.from.value ? fromTimeInput(els.from.value) : roundUpToQuarter(new Date());
+  els.from.value = toTimeInput(from);
+
+  const endOfDay = new Date(from);
+  endOfDay.setHours(23, 45, 0, 0);
+  const to = new Date(from.getTime() + minutes * 60000);
+  els.to.value = toTimeInput(to > endOfDay ? endOfDay : to);
+
+  render();
+}
+
+// Highlight the preset whose duration matches the current From/To window.
+function syncPresetHighlight() {
+  let activeMinutes = null;
+  if (els.from.value && els.to.value) {
+    const diff = (fromTimeInput(els.to.value) - fromTimeInput(els.from.value)) / 60000;
+    if (diff > 0) activeMinutes = diff;
+  }
+  for (const btn of els.presets) {
+    btn.classList.toggle('active', Number(btn.dataset.minutes) === activeMinutes);
+  }
 }
 
 function applyFilters(rooms) {
@@ -215,8 +262,49 @@ function renderRooms(rooms, { windowActive, win } = {}) {
   }
 }
 
+// Read filter state from the URL query string into the inputs. Called once at
+// startup so a shared/bookmarked link restores the same view. Values are
+// validated because they come from an untrusted source (the URL bar).
+function readUrl() {
+  const params = new URLSearchParams(location.search);
+
+  const date = params.get('date');
+  els.date.value =
+    date && /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= todayStr() ? date : todayStr();
+
+  const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
+  if (timeRe.test(params.get('from') ?? '')) els.from.value = params.get('from');
+  if (timeRe.test(params.get('to') ?? '')) els.to.value = params.get('to');
+
+  const style = params.get('style');
+  if (style && Array.from(els.style.options).some((o) => o.value === style)) {
+    els.style.value = style;
+  }
+
+  const capacity = params.get('capacity');
+  if (capacity && Object.prototype.hasOwnProperty.call(CAPACITY_BANDS, capacity)) {
+    els.capacity.value = capacity;
+  }
+}
+
+// Reflect the current filter state back into the URL without adding history
+// entries, so the address bar stays shareable as the user tweaks filters.
+function syncUrl() {
+  const params = new URLSearchParams();
+  if (els.date.value && els.date.value !== todayStr()) params.set('date', els.date.value);
+  if (els.from.value) params.set('from', els.from.value);
+  if (els.to.value && els.from.value) params.set('to', els.to.value);
+  if (els.style.value) params.set('style', els.style.value);
+  if (els.capacity.value) params.set('capacity', els.capacity.value);
+
+  const qs = params.toString();
+  history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+}
+
 function render() {
   if (!currentData) return;
+  syncUrl();
+  syncPresetHighlight();
   const filtered = applyFilters(currentData.rooms);
   const win = getWindow();
   const windowActive = win != null;
@@ -284,8 +372,8 @@ async function load() {
 }
 
 function init() {
-  els.date.value = todayStr();
   els.date.min = todayStr();
+  readUrl();
   els.date.addEventListener('change', () => {
     if (!els.date.value) els.date.value = todayStr();
     load();
@@ -300,6 +388,9 @@ function init() {
     els.to.value = '';
     render();
   });
+  for (const btn of els.presets) {
+    btn.addEventListener('click', () => applyPreset(Number(btn.dataset.minutes)));
+  }
 
   load();
   // Keep "free now" honest without hammering the server.
