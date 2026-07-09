@@ -1,0 +1,13 @@
+{
+  "name": "bettercal",
+  "version": "1.0.0",
+  "description": "A calmer view of Northeastern Snell Library study room availability",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test tests/"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
