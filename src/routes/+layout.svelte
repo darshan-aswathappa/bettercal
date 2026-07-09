@@ -8,7 +8,7 @@
 
 <footer>
   <div class="footer-inner">
-    <span class="footer-brand">bettercal</span>
+    <span class="footer-brand">SnellView</span>
     <p class="footer-copy">
       Unofficial view of
       <a href="https://northeastern.libcal.com/reserve/spaces/studyspace" target="_blank" rel="noopener"

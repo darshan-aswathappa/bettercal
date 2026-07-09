@@ -16,7 +16,7 @@ export async function GET({ url }) {
     const payload = await buildAvailability(date);
     return json(payload, { headers: { 'cache-control': 'no-store' } });
   } catch (err) {
-    console.error(`[bettercal] /api/availability?date=${date} failed:`, err);
+    console.error(`[snellview] /api/availability?date=${date} failed:`, err);
     return json(
       { ok: false, error: 'Could not reach LibCal. Try again shortly.' },
       { status: 502 }

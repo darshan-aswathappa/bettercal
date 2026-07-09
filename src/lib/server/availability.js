@@ -66,7 +66,7 @@ export function createAvailabilityService({
       const initial = await buildAvailability(date);
       return { date, initial, error: null };
     } catch (err) {
-      console.error(`[bettercal] availability for ${date} failed:`, err);
+      console.error(`[snellview] availability for ${date} failed:`, err);
       return { date, initial: null, error: 'Could not reach LibCal. Try again shortly.' };
     }
   }

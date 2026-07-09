@@ -39,7 +39,23 @@
 
 <header class="topbar">
   <div class="brand">
-    <h1>bettercal</h1>
+    <div class="brand-lockup">
+      <svg
+        class="brand-logo"
+        width="28"
+        height="28"
+        viewBox="0 0 28 28"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <rect x="0" y="0" width="12" height="12" fill="#D41B2C" />
+        <rect x="16" y="0" width="12" height="12" stroke="#D41B2C" stroke-width="1.5" />
+        <rect x="0" y="16" width="12" height="12" stroke="#D41B2C" stroke-width="1.5" />
+        <rect x="16" y="16" width="12" height="12" fill="#D41B2C" />
+      </svg>
+      <h1>SnellView</h1>
+    </div>
     <p class="tagline">Free study room slots, at a glance</p>
   </div>
 

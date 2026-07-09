@@ -79,6 +79,17 @@ body {
   border-bottom: 1px solid var(--color-gray-200);
 }
 
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  flex-shrink: 0;
+  display: block;
+}
+
 .brand h1 {
   margin: 0;
   font-family: var(--font-serif);
