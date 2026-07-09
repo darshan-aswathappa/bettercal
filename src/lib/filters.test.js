@@ -1,5 +1,14 @@
 import { test, expect } from 'vitest';
-import { CAPACITY_BANDS, applyFilters, getWindow, readFilterParams, buildFilterQuery } from './filters.js';
+import {
+  CAPACITY_BANDS,
+  MIN_BOOKING_MINUTES,
+  MAX_BOOKING_MINUTES,
+  applyFilters,
+  getWindow,
+  windowErrorMessage,
+  readFilterParams,
+  buildFilterQuery,
+} from './filters.js';
 
 const rooms = [
   { name: 'A', grouping: 'Group Study Rooms', capacity: 6 },
@@ -38,6 +47,7 @@ test('getWindow builds a from-only window (open-ended)', () => {
     from: '2026-07-09 09:00:00',
     to: null,
     invalid: false,
+    reason: null,
   });
 });
 
@@ -46,10 +56,47 @@ test('getWindow builds a full window and flags an inverted one', () => {
     from: '2026-07-09 09:00:00',
     to: '2026-07-09 11:00:00',
     invalid: false,
+    reason: null,
   });
 
   const inverted = getWindow({ date: '2026-07-09', from: '11:00', to: '09:00' });
   expect(inverted.invalid).toBe(true);
+  expect(inverted.reason).toBe('inverted');
+});
+
+test('LibCal booking bounds are 30 minutes to 3 hours', () => {
+  expect(MIN_BOOKING_MINUTES).toBe(30);
+  expect(MAX_BOOKING_MINUTES).toBe(180);
+});
+
+test('getWindow flags a window shorter than the LibCal minimum', () => {
+  const short = getWindow({ date: '2026-07-09', from: '09:00', to: '09:15' });
+  expect(short.invalid).toBe(true);
+  expect(short.reason).toBe('too-short');
+});
+
+test('getWindow flags a window longer than the LibCal maximum', () => {
+  const long = getWindow({ date: '2026-07-09', from: '09:00', to: '13:00' });
+  expect(long.invalid).toBe(true);
+  expect(long.reason).toBe('too-long');
+});
+
+test('getWindow accepts windows exactly on the 30-minute and 3-hour bounds', () => {
+  expect(getWindow({ date: '2026-07-09', from: '09:00', to: '09:30' }).invalid).toBe(false);
+  expect(getWindow({ date: '2026-07-09', from: '09:00', to: '12:00' }).invalid).toBe(false);
+});
+
+test('getWindow leaves an open-ended window unbounded by the 3-hour cap', () => {
+  const open = getWindow({ date: '2026-07-09', from: '09:00', to: '' });
+  expect(open.invalid).toBe(false);
+  expect(open.reason).toBeNull();
+});
+
+test('windowErrorMessage maps each reason to a distinct message', () => {
+  expect(windowErrorMessage('inverted')).toMatch(/after start time/i);
+  expect(windowErrorMessage('too-short')).toMatch(/30 min/i);
+  expect(windowErrorMessage('too-long')).toMatch(/3 hour|3 hr/i);
+  expect(windowErrorMessage(null)).toBe('');
 });
 
 test('readFilterParams pulls valid values and ignores junk', () => {

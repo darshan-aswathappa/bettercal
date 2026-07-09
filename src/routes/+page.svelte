@@ -9,6 +9,7 @@
   import {
     applyFilters,
     getWindow,
+    windowErrorMessage,
     readFilterParams,
     buildFilterQuery,
   } from '$lib/filters.js';
@@ -59,7 +60,7 @@
 
   const emptyMessage = $derived(
     invalidWindow
-      ? 'End time must be after start time.'
+      ? windowErrorMessage(win.reason)
       : windowActive
         ? 'No rooms are free for that whole time window. Try a shorter window or a different time.'
         : 'No free slots match these filters for this date.'

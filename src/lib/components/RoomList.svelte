@@ -1,5 +1,5 @@
 <script>
-  import { fmtTime, fmtDuration, parseTs, buildBookUrl } from '$lib/format.js';
+  import { fmtTime, fmtDuration, parseTs, buildBookUrl, bookingHint } from '$lib/format.js';
 
   let {
     rooms = [],
@@ -36,22 +36,34 @@
             {/if}
           {:else}
             {#each room.ranges as r (r.start)}
-              <span
+              <a
                 class="range-pill"
-                title={`Free for ${fmtDuration(parseTs(r.end) - parseTs(r.start))}`}
+                href={buildBookUrl(room.bookUrl, r.start)}
+                target="_blank"
+                rel="noopener"
+                title={`Free for ${fmtDuration(parseTs(r.end) - parseTs(r.start))} — book from ${fmtTime(r.start)}`}
               >
                 {fmtTime(r.start)} – {fmtTime(r.end)}
-              </span>
+              </a>
             {/each}
           {/if}
         </div>
 
-        <a
-          class="book-link"
-          href={buildBookUrl(room.bookUrl, windowActive && win ? win.from : date)}
-          target="_blank"
-          rel="noopener">Book →</a
-        >
+        <div class="book-col">
+          <a
+            class="book-link"
+            href={buildBookUrl(room.bookUrl, windowActive && win ? win.from : date)}
+            target="_blank"
+            rel="noopener">Book →</a
+          >
+          {#if windowActive}
+            <span
+              class="book-hint"
+              data-testid="book-hint"
+              style:visibility={bookingHint(win) ? 'visible' : 'hidden'}
+            >{bookingHint(win) || ' '}</span>
+          {/if}
+        </div>
       </div>
     {/each}
   </div>

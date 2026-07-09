@@ -51,6 +51,15 @@ export function windowLabel(win) {
   return win.to ? `${fromLabel} – ${fmtTime(win.to)}` : `from ${fromLabel}`;
 }
 
+// LibCal defaults every booking to 1 hour once you click a start slot, so a
+// user aiming for a longer window has to change the end dropdown by hand. This
+// spells out the exact end time to select. Empty for open-ended windows, which
+// have no specific end to instruct.
+export function bookingHint(win) {
+  if (!win?.to) return '';
+  return `set end: ${fmtTime(win.to)} (default is 1h)`;
+}
+
 // LibCal's space page defaults to today unless given ?date=. Pass either a
 // plain date (YYYY-MM-DD) or a full "YYYY-MM-DD HH:mm:ss" to pre-position it.
 export function buildBookUrl(baseUrl, dateOrTs) {

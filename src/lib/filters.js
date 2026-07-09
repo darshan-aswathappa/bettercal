@@ -1,10 +1,29 @@
 // Client-side filtering of the availability payload. Lifted from public/app.js
 // and reshaped to take plain values instead of reading DOM inputs directly.
 
+import { parseTs } from './format.js';
+
 export const CAPACITY_BANDS = {
   '1-4': [1, 4],
   '5-8': [5, 8],
 };
+
+// LibCal's Snell study-room booking bounds: it refuses anything shorter than
+// 30 minutes and caps a single booking at 3 hours. We enforce the same limits
+// so a window bettercal shows as "free" is one LibCal will actually let you book.
+export const MIN_BOOKING_MINUTES = 30;
+export const MAX_BOOKING_MINUTES = 180;
+
+const WINDOW_ERRORS = {
+  inverted: 'End time must be after start time.',
+  'too-short': `LibCal needs at least ${MIN_BOOKING_MINUTES} minutes — widen your window.`,
+  'too-long': `LibCal caps bookings at 3 hours — shorten your window.`,
+};
+
+/** User-facing message for a getWindow() reason, or '' when the window is fine. */
+export function windowErrorMessage(reason) {
+  return WINDOW_ERRORS[reason] ?? '';
+}
 
 /**
  * @param {Array<{grouping?:string, capacity?:number|null}>} rooms
@@ -31,8 +50,20 @@ export function getWindow({ date, from, to } = {}) {
   if (!from) return null;
   const start = `${date} ${from}:00`;
   const end = to ? `${date} ${to}:00` : null;
-  const invalid = end != null && end <= start;
-  return { from: start, to: end, invalid };
+  const reason = windowReason(start, end);
+  return { from: start, to: end, invalid: reason != null, reason };
+}
+
+// Classify a built window against LibCal's booking rules. Open-ended windows
+// (no end) are a search convenience, not a booking, so only the min/max caps
+// on a concrete end matter here.
+function windowReason(start, end) {
+  if (end == null) return null;
+  if (end <= start) return 'inverted';
+  const minutes = (parseTs(end) - parseTs(start)) / 60000;
+  if (minutes < MIN_BOOKING_MINUTES) return 'too-short';
+  if (minutes > MAX_BOOKING_MINUTES) return 'too-long';
+  return null;
 }
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;

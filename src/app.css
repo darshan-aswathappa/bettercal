@@ -338,7 +338,7 @@ section { margin-top: 40px; }
   border-top: 1px solid var(--color-gray-200);
   padding: 14px 18px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
   transition: background 120ms;
 }
@@ -375,6 +375,7 @@ section { margin-top: 40px; }
 }
 
 .range-pill {
+  display: inline-block;
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: var(--fw-medium);
@@ -384,6 +385,14 @@ section { margin-top: 40px; }
   border-radius: 0;
   padding: 3px 10px;
   white-space: nowrap;
+  text-decoration: none;
+  transition: color 120ms, border-color 120ms;
+}
+
+/* Each pill is a deep link into LibCal at that slot's start time. */
+a.range-pill:hover {
+  color: var(--color-red);
+  border-color: var(--color-red);
 }
 
 .range-pill--match {
@@ -401,9 +410,25 @@ section { margin-top: 40px; }
   white-space: nowrap;
 }
 
+.book-col {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* Nudges the user to correct LibCal's 1h default end time. */
+.book-hint {
+  font-family: var(--font-sans);
+  color: var(--color-gray-500);
+  font-size: 11px;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .book-link {
   flex-shrink: 0;
-  align-self: center;
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: var(--fw-semibold);
@@ -483,7 +508,7 @@ footer {
 @media (max-width: 640px) {
   .room-row { flex-direction: column; gap: 8px; }
   .room-info { flex-basis: auto; }
-  .book-link { align-self: flex-start; }
+  .book-col { align-self: flex-start; align-items: flex-start; }
 
   .now-grid { grid-template-columns: 1fr 1fr; }
 }

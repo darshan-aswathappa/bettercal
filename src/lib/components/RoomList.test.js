@@ -37,6 +37,17 @@ test('renders a row per room with name, sub, and a Book link', () => {
   expect(bookLinks[0]).toHaveAttribute('href', 'https://libcal/1?date=2026-07-09');
 });
 
+test('each free-range pill is a LibCal link positioned at that range start', () => {
+  render(RoomList, { rooms: [rooms[0]], date: '2026-07-09' });
+
+  // rooms[0] has a 09:00 range and a 14:00 range; each pill deep-links to its start.
+  const nine = screen.getByRole('link', { name: /9:00/ });
+  expect(nine).toHaveAttribute('href', 'https://libcal/1?date=2026-07-09%2009%3A00%3A00');
+
+  const two = screen.getByRole('link', { name: /^2:00/ });
+  expect(two).toHaveAttribute('href', 'https://libcal/1?date=2026-07-09%2014%3A00%3A00');
+});
+
 test('window-active mode shows a match pill plus the open-range context', () => {
   render(RoomList, {
     rooms: [rooms[0]],
@@ -52,6 +63,33 @@ test('window-active mode shows a match pill plus the open-range context', () => 
     'href',
     expect.stringContaining('10%3A00%3A00')
   );
+});
+
+test('window-active mode spells out the end time to counter LibCal\'s 1h default', () => {
+  render(RoomList, {
+    rooms: [rooms[0]],
+    windowActive: true,
+    win: { from: '2026-07-09 10:00:00', to: '2026-07-09 11:00:00' },
+    date: '2026-07-09',
+  });
+
+  const hint = screen.getByTestId('book-hint');
+  expect(hint).toHaveTextContent('11:00'); // the end time the user must set on LibCal
+  expect(hint).toHaveTextContent(/default/i);
+});
+
+test('open-ended window reserves hint space but keeps it invisible', () => {
+  render(RoomList, {
+    rooms: [rooms[0]],
+    windowActive: true,
+    win: { from: '2026-07-09 10:00:00', to: null },
+    date: '2026-07-09',
+  });
+
+  // Element is in DOM so layout space is reserved, but text is hidden.
+  const hint = screen.getByTestId('book-hint');
+  expect(hint).toBeInTheDocument();
+  expect(hint).toHaveStyle('visibility: hidden');
 });
 
 test('shows the empty message with the error class when there are no rooms', () => {

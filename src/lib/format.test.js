@@ -8,6 +8,7 @@ import {
   roundUpToQuarter,
   windowLabel,
   buildBookUrl,
+  bookingHint,
 } from './format.js';
 
 test('todayStr is a zero-padded YYYY-MM-DD string', () => {
@@ -56,4 +57,14 @@ test('buildBookUrl appends the date only when given one', () => {
 test('windowLabel shows a range with an end and "from" without one', () => {
   expect(windowLabel({ from: '2026-07-09 09:00:00', to: '2026-07-09 11:00:00' })).toContain('–');
   expect(windowLabel({ from: '2026-07-09 09:00:00', to: null })).toMatch(/^from /);
+});
+
+test('bookingHint names the end time to set and warns about the 1h default', () => {
+  const hint = bookingHint({ from: '2026-07-09 14:00:00', to: '2026-07-09 17:00:00' });
+  expect(hint).toContain('5:00'); // the end time the user must pick on LibCal
+  expect(hint).toMatch(/default/i);
+});
+
+test('bookingHint is empty for an open-ended window (no end to instruct)', () => {
+  expect(bookingHint({ from: '2026-07-09 14:00:00', to: null })).toBe('');
 });
