@@ -51,6 +51,24 @@ test('highlights the preset matching the active window length', () => {
   expect(screen.getByRole('button', { name: '2h' })).not.toHaveClass('active');
 });
 
+test('renders the 7-day quick-jump strip anchored at minDate', () => {
+  render(Filters, base);
+
+  const strip = screen.getByRole('group', { name: /jump to a day/i });
+  expect(strip).toBeInTheDocument();
+  // First chip is minDate (Thu Jul 9), shown as "Today".
+  expect(screen.getByRole('button', { name: /thu jul 9/i })).toHaveTextContent('Today');
+});
+
+test('clicking a day in the strip emits its date via onDate', async () => {
+  const onDate = vi.fn();
+  render(Filters, { ...base, onDate });
+
+  await fireEvent.click(screen.getByRole('button', { name: /fri jul 10/i }));
+
+  expect(onDate).toHaveBeenCalledWith('2026-07-10');
+});
+
 test('the Clear time button is hidden until a window is active', async () => {
   const { rerender } = render(Filters, { ...base, showClearTime: false });
   expect(screen.getByTestId('clear-time')).toHaveAttribute('hidden');

@@ -1,5 +1,6 @@
 <script>
   import { fmtTime, fmtDuration, parseTs, buildBookUrl, bookingHint } from '$lib/format.js';
+  import { roomId } from '$lib/favorites.js';
 
   let {
     rooms = [],
@@ -8,6 +9,8 @@
     date,
     emptyMessage = '',
     error = false,
+    favorites = [],
+    onToggleFavorite,
   } = $props();
 
   let copiedId = $state(null);
@@ -30,10 +33,35 @@
   <div class="room-list">
     {#each rooms as room (room.eid ?? room.name)}
       {@const rowId = room.eid ?? room.name}
-      <div class="room-row">
+      {@const faved = favorites.includes(roomId(room))}
+      <div class="room-row" class:room-row--fav={faved}>
         <div class="room-info">
-          <div class="room-name">{room.name}</div>
-          <div class="room-sub">{room.grouping} · seats {room.capacity ?? '—'}</div>
+          <button
+            type="button"
+            class="fav-btn"
+            class:fav-btn--active={faved}
+            aria-pressed={faved}
+            aria-label={`${faved ? 'Remove' : 'Add'} ${room.name} ${faved ? 'from' : 'to'} favorites`}
+            onclick={() => onToggleFavorite?.(room)}
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill={faved ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+          </button>
+          <div class="room-text">
+            <div class="room-name">{room.name}</div>
+            <div class="room-sub">{room.grouping} · seats {room.capacity ?? '—'}</div>
+          </div>
         </div>
 
         <div class="ranges">

@@ -15,6 +15,7 @@
   } from '$lib/filters.js';
   import { sortRooms, DEFAULT_SORT } from '$lib/sort.js';
   import { computePreset, activeMinutesFor } from '$lib/presets.js';
+  import { loadFavorites, saveFavorites, toggleFavorite, pinFavoritesFirst } from '$lib/favorites.js';
 
   let { data } = $props();
 
@@ -30,6 +31,7 @@
   let loadError = $state(untrack(() => data.error));
   let loading = $state(false);
   let now = $state(new Date());
+  let favorites = $state([]);
 
   const rooms = $derived(availability?.rooms ?? []);
   const filtered = $derived(applyFilters(rooms, { style, capacity }));
@@ -57,9 +59,12 @@
   });
 
   const displayRooms = $derived(
-    sortRooms(
-      invalidWindow ? [] : windowActive ? windowMatches : filtered.filter((r) => r.ranges.length > 0),
-      sort
+    pinFavoritesFirst(
+      sortRooms(
+        invalidWindow ? [] : windowActive ? windowMatches : filtered.filter((r) => r.ranges.length > 0),
+        sort
+      ),
+      favorites
     )
   );
 
@@ -140,7 +145,22 @@
     to = '';
   }
 
+  function onToggleFavorite(room) {
+    favorites = toggleFavorite(favorites, room);
+  }
+
+  // Persist favorites whenever they change — but only after onMount has restored
+  // them, so the initial empty state can't clobber a returning user's storage.
+  $effect(() => {
+    const ids = favorites; // track
+    if (!browser || !hydrated) return;
+    saveFavorites(localStorage, ids);
+  });
+
   onMount(() => {
+    // Restore starred rooms from a previous visit.
+    favorites = loadFavorites(localStorage);
+
     // Restore filter state from a shared/bookmarked link.
     const params = new URLSearchParams(location.search);
     const seeded = readFilterParams(params);
@@ -216,6 +236,8 @@
         {date}
         {emptyMessage}
         error={invalidWindow}
+        {favorites}
+        {onToggleFavorite}
       />
     {/if}
   </section>

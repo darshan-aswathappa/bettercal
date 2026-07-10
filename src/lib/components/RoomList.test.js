@@ -118,3 +118,22 @@ test('share copies the LibCal room link for the selected date', async () => {
 
   expect(writeText).toHaveBeenCalledWith('https://libcal/1?date=2026-07-09');
 });
+
+test('renders a favorite toggle per room reflecting the favorited state', () => {
+  render(RoomList, { rooms, date: '2026-07-09', favorites: ['1'] });
+
+  const favA = screen.getByRole('button', { name: /remove group study 130s from favorites/i });
+  expect(favA).toHaveAttribute('aria-pressed', 'true');
+
+  const favB = screen.getByRole('button', { name: /add silent 200 to favorites/i });
+  expect(favB).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('clicking the favorite toggle emits the room to onToggleFavorite', async () => {
+  const onToggleFavorite = vi.fn();
+  render(RoomList, { rooms: [rooms[0]], date: '2026-07-09', favorites: [], onToggleFavorite });
+
+  await fireEvent.click(screen.getByRole('button', { name: /add group study 130s to favorites/i }));
+
+  expect(onToggleFavorite).toHaveBeenCalledWith(rooms[0]);
+});

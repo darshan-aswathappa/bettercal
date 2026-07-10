@@ -1,5 +1,6 @@
 <script>
   import { SORT_OPTIONS } from '$lib/sort.js';
+  import DateStrip from './DateStrip.svelte';
 
   const PRESETS = [
     { minutes: 30, label: '30m' },
@@ -64,6 +65,7 @@
   </div>
 
   <div class="filters">
+    <DateStrip startDate={minDate} selected={date} onSelect={onDate} />
     <label>
       <span>Date</span>
       <input type="date" min={minDate} value={date} onchange={(e) => onDate(e.currentTarget.value)} />
