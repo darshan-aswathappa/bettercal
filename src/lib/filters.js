@@ -9,6 +9,15 @@ export const CAPACITY_BANDS = {
   '5-8': [5, 8],
 };
 
+// Known LibCal room groupings at Snell. Single source for the Filters
+// dropdown and the watchlist API's style whitelist.
+export const STYLES = [
+  'Group Study Rooms',
+  'Graduate Group Study Rooms',
+  'Individual Study',
+  'Individual Silent Study',
+];
+
 // LibCal's Snell study-room booking bounds: it refuses anything shorter than
 // 30 minutes and caps a single booking at 3 hours. We enforce the same limits
 // so a window bettercal shows as "free" is one LibCal will actually let you book.

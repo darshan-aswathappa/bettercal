@@ -4,6 +4,7 @@
   import Filters from '$lib/components/Filters.svelte';
   import FreeNow from '$lib/components/FreeNow.svelte';
   import RoomList from '$lib/components/RoomList.svelte';
+  import WatchlistCta from '$lib/components/WatchlistCta.svelte';
   import { todayStr, windowLabel } from '$lib/format.js';
   import { rangeCoversWindow } from '$lib/slots.js';
   import {
@@ -71,6 +72,14 @@
   // Room count for the heading badge — only meaningful once availability has
   // loaded and the window (if any) is valid.
   const showCount = $derived(!!availability && !loadError && !invalidWindow);
+
+  // Offer the watchlist exactly when a concrete search came up empty: a valid
+  // (or end-less, which the CTA nudges about) time window on a loaded, error-free
+  // date with zero matching rooms.
+  const showWatchlistCta = $derived(
+    windowActive && !invalidWindow && !loading && !loadError && !!availability &&
+      windowMatches.length === 0
+  );
 
   const emptyMessage = $derived(
     invalidWindow
@@ -239,6 +248,9 @@
         {favorites}
         {onToggleFavorite}
       />
+      {#if showWatchlistCta}
+        <WatchlistCta {date} {win} {style} {capacity} />
+      {/if}
     {/if}
   </section>
 </main>

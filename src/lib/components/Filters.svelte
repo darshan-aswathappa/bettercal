@@ -1,5 +1,6 @@
 <script>
   import { SORT_OPTIONS } from '$lib/sort.js';
+  import { STYLES } from '$lib/filters.js';
   import DateStrip from './DateStrip.svelte';
 
   const PRESETS = [
@@ -7,13 +8,6 @@
     { minutes: 60, label: '1h' },
     { minutes: 120, label: '2h' },
     { minutes: 180, label: '3h' },
-  ];
-
-  const STYLES = [
-    'Group Study Rooms',
-    'Graduate Group Study Rooms',
-    'Individual Study',
-    'Individual Silent Study',
   ];
 
   let {

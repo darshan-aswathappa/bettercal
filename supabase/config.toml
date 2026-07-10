@@ -1,0 +1,8 @@
+# Supabase CLI config. The cloud project is `bettercal` (ref zlelldmqrrcfitqwwhri);
+# link with: npx supabase link --project-ref zlelldmqrrcfitqwwhri
+project_id = "bettercal"
+
+[functions.watchlist-worker]
+# Authenticated by the x-worker-secret header (set via `supabase secrets set
+# WORKER_SECRET=...`), not by a Supabase JWT — pg_cron calls it via pg_net.
+verify_jwt = false
