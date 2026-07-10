@@ -13,6 +13,7 @@
     readFilterParams,
     buildFilterQuery,
   } from '$lib/filters.js';
+  import { sortRooms, DEFAULT_SORT } from '$lib/sort.js';
   import { computePreset, activeMinutesFor } from '$lib/presets.js';
 
   let { data } = $props();
@@ -24,6 +25,7 @@
   let to = $state('');
   let style = $state('');
   let capacity = $state('');
+  let sort = $state(DEFAULT_SORT);
   let availability = $state(untrack(() => data.initial));
   let loadError = $state(untrack(() => data.error));
   let loading = $state(false);
@@ -55,8 +57,15 @@
   });
 
   const displayRooms = $derived(
-    invalidWindow ? [] : windowActive ? windowMatches : filtered.filter((r) => r.ranges.length > 0)
+    sortRooms(
+      invalidWindow ? [] : windowActive ? windowMatches : filtered.filter((r) => r.ranges.length > 0),
+      sort
+    )
   );
+
+  // Room count for the heading badge — only meaningful once availability has
+  // loaded and the window (if any) is valid.
+  const showCount = $derived(!!availability && !loadError && !invalidWindow);
 
   const emptyMessage = $derived(
     invalidWindow
@@ -102,10 +111,16 @@
     }
   }
 
+  // Guards the URL-sync effect so it can't overwrite the incoming query string
+  // before onMount has restored filter state from it (a shared link would
+  // otherwise be wiped on load).
+  let hydrated = false;
+
   // Keep the address bar shareable without adding history entries.
   $effect(() => {
-    if (!browser) return;
-    const qs = buildFilterQuery({ date, from, to, style, capacity }, todayStr());
+    // Read deps unconditionally so the effect re-runs once onMount seeds state.
+    const qs = buildFilterQuery({ date, from, to, style, capacity, sort }, todayStr());
+    if (!browser || !hydrated) return;
     history.replaceState(history.state, '', qs ? `?${qs}` : location.pathname);
   });
 
@@ -133,6 +148,7 @@
     to = seeded.to;
     style = seeded.style;
     capacity = seeded.capacity;
+    sort = seeded.sort;
 
     // The SSR payload used the server's "today"; reconcile with the browser's.
     const urlDate = params.get('date');
@@ -142,6 +158,9 @@
       date = resolved;
       refetch();
     }
+
+    // URL has now been read; allow the sync effect to write from here on.
+    hydrated = true;
 
     const id = setInterval(() => {
       now = new Date();
@@ -157,6 +176,7 @@
   {to}
   {style}
   {capacity}
+  {sort}
   minDate={todayStr()}
   {activeMinutes}
   showClearTime={windowActive}
@@ -165,6 +185,7 @@
   onTo={(v) => (to = v)}
   onStyle={(v) => (style = v)}
   onCapacity={(v) => (capacity = v)}
+  onSort={(v) => (sort = v)}
   {onPreset}
   {onClearTime}
 />
@@ -177,6 +198,9 @@
   <section>
     <div class="section-head">
       <h2>{heading}</h2>
+      {#if showCount}
+        <span class="count" data-testid="room-count">{displayRooms.length}</span>
+      {/if}
       <span class="meta">{updatedLabel}</span>
     </div>
 

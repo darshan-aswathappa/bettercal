@@ -9,6 +9,7 @@ const base = {
   to: '',
   style: '',
   capacity: '',
+  sort: 'name',
   minDate: '2026-07-09',
 };
 
@@ -30,6 +31,17 @@ test('changing the seat-style select emits the chosen value', async () => {
   });
 
   expect(onStyle).toHaveBeenCalledWith('Individual Study');
+});
+
+test('changing the sort select emits the chosen key', async () => {
+  const onSort = vi.fn();
+  render(Filters, { ...base, onSort });
+
+  await fireEvent.change(screen.getByDisplayValue('Name'), {
+    target: { value: 'longest' },
+  });
+
+  expect(onSort).toHaveBeenCalledWith('longest');
 });
 
 test('highlights the preset matching the active window length', () => {

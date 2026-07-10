@@ -1,5 +1,5 @@
-import { test, expect } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import RoomList from './RoomList.svelte';
 
 const rooms = [
@@ -23,6 +23,17 @@ const rooms = [
     ranges: [{ start: '2026-07-09 10:00:00', end: '2026-07-09 11:00:00' }],
   },
 ];
+
+let writeText;
+
+beforeEach(() => {
+  writeText = vi.fn().mockResolvedValue(undefined);
+  vi.stubGlobal('navigator', { clipboard: { writeText } });
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 test('renders a row per room with name, sub, and a Book link', () => {
   render(RoomList, { rooms, date: '2026-07-09' });
@@ -98,4 +109,12 @@ test('shows the empty message with the error class when there are no rooms', () 
   const status = screen.getByTestId('status');
   expect(status).toHaveTextContent('End time must be after start time.');
   expect(status).toHaveClass('error');
+});
+
+test('share copies the LibCal room link for the selected date', async () => {
+  render(RoomList, { rooms: [rooms[0]], date: '2026-07-09' });
+
+  await fireEvent.click(screen.getByRole('button', { name: /copy link to group study 130s/i }));
+
+  expect(writeText).toHaveBeenCalledWith('https://libcal/1?date=2026-07-09');
 });

@@ -100,18 +100,47 @@ test('windowErrorMessage maps each reason to a distinct message', () => {
 });
 
 test('readFilterParams pulls valid values and ignores junk', () => {
-  const params = new URLSearchParams('from=09:00&to=11:00&style=Individual%20Study&capacity=1-4');
+  const params = new URLSearchParams(
+    'from=09:00&to=11:00&style=Individual%20Study&capacity=1-4&sort=longest'
+  );
   expect(readFilterParams(params)).toEqual({
     from: '09:00',
     to: '11:00',
     style: 'Individual Study',
     capacity: '1-4',
+    sort: 'longest',
   });
 });
 
 test('readFilterParams rejects malformed times and unknown capacity bands', () => {
   const params = new URLSearchParams('from=9am&to=99:99&capacity=100');
-  expect(readFilterParams(params)).toEqual({ from: '', to: '', style: '', capacity: '' });
+  expect(readFilterParams(params)).toEqual({
+    from: '',
+    to: '',
+    style: '',
+    capacity: '',
+    sort: 'name',
+  });
+});
+
+test('readFilterParams keeps a known sort and defaults an unknown one to name', () => {
+  expect(readFilterParams(new URLSearchParams('sort=longest')).sort).toBe('longest');
+  expect(readFilterParams(new URLSearchParams('sort=capacity')).sort).toBe('capacity');
+  expect(readFilterParams(new URLSearchParams('sort=bogus')).sort).toBe('name');
+  expect(readFilterParams(new URLSearchParams('')).sort).toBe('name');
+});
+
+test('buildFilterQuery includes a non-default sort and omits the default', () => {
+  const today = '2026-07-09';
+  expect(
+    buildFilterQuery({ date: today, from: '', to: '', style: '', capacity: '', sort: 'name' }, today)
+  ).toBe('');
+  expect(
+    buildFilterQuery(
+      { date: today, from: '', to: '', style: '', capacity: '', sort: 'longest' },
+      today
+    )
+  ).toBe('sort=longest');
 });
 
 test('buildFilterQuery omits the date when it equals today and drops "to" without "from"', () => {

@@ -2,6 +2,7 @@
 // and reshaped to take plain values instead of reading DOM inputs directly.
 
 import { parseTs } from './format.js';
+import { normalizeSort, DEFAULT_SORT } from './sort.js';
 
 export const CAPACITY_BANDS = {
   '1-4': [1, 4],
@@ -82,22 +83,24 @@ export function readFilterParams(params) {
   const capacity = Object.prototype.hasOwnProperty.call(CAPACITY_BANDS, capacityRaw)
     ? capacityRaw
     : '';
-  return { from, to, style, capacity };
+  const sort = normalizeSort(params.get('sort') ?? '');
+  return { from, to, style, capacity, sort };
 }
 
 /**
  * Serialize the current filter state to a query string, mirroring app.js's
  * syncUrl: omit today's date, drop "to" without "from", drop empty values.
  *
- * @param {{date, from, to, style, capacity}} state
+ * @param {{date, from, to, style, capacity, sort}} state
  * @param {string} today YYYY-MM-DD
  */
-export function buildFilterQuery({ date, from, to, style, capacity }, today) {
+export function buildFilterQuery({ date, from, to, style, capacity, sort }, today) {
   const params = new URLSearchParams();
   if (date && date !== today) params.set('date', date);
   if (from) params.set('from', from);
   if (to && from) params.set('to', to);
   if (style) params.set('style', style);
   if (capacity) params.set('capacity', capacity);
+  if (sort && sort !== DEFAULT_SORT) params.set('sort', sort);
   return params.toString();
 }

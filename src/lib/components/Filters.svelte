@@ -1,4 +1,6 @@
 <script>
+  import { SORT_OPTIONS } from '$lib/sort.js';
+
   const PRESETS = [
     { minutes: 30, label: '30m' },
     { minutes: 60, label: '1h' },
@@ -19,6 +21,7 @@
     to,
     style,
     capacity,
+    sort,
     minDate,
     activeMinutes = null,
     showClearTime = false,
@@ -27,6 +30,7 @@
     onTo,
     onStyle,
     onCapacity,
+    onSort,
     onPreset,
     onClearTime,
   } = $props();
@@ -111,6 +115,14 @@
         <option value="">Any size</option>
         <option value="1-4">1–4 people</option>
         <option value="5-8">5–8 people</option>
+      </select>
+    </label>
+    <label>
+      <span>Sort by</span>
+      <select value={sort} onchange={(e) => onSort(e.currentTarget.value)}>
+        {#each SORT_OPTIONS as opt (opt.value)}
+          <option value={opt.value}>{opt.label}</option>
+        {/each}
       </select>
     </label>
   </div>
