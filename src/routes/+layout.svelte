@@ -4,17 +4,15 @@
   let { children } = $props();
 </script>
 
-{@render children()}
+<div class="page-content">
+  {@render children()}
+</div>
 
 <footer>
   <div class="footer-inner">
     <span class="footer-brand">SnellView</span>
-    <a class="footer-link" href="/watchlist">Your watchlist</a>
-    <p class="footer-copy">
-      Unofficial view of
-      <a href="https://northeastern.libcal.com/reserve/spaces/studyspace" target="_blank" rel="noopener"
-        >Northeastern LibCal</a
-      >. Booking happens on LibCal. Refreshes every minute.
-    </p>
+    <div class="footer-right">
+      <a class="footer-link" href="/watchlist">Your watchlist</a>
+    </div>
   </div>
 </footer>

@@ -37,6 +37,13 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  flex: 1;
 }
 
 /* ============================================================
@@ -640,11 +647,19 @@ footer {
   flex-shrink: 0;
 }
 
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
 .footer-copy {
   font-family: var(--font-sans);
   font-size: 13px;
   color: rgba(255, 255, 255, 0.45);
   margin: 0;
+  text-align: right;
 }
 
 .footer-copy a {
