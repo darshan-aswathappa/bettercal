@@ -270,7 +270,7 @@
 </nav>
 
 <main>
-  {#if !windowActive}
+  {#if !windowActive && tab === 'library'}
     <FreeNow rooms={filtered} {now} {isToday} {date} />
   {/if}
 
