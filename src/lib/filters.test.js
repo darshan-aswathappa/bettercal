@@ -109,6 +109,7 @@ test('readFilterParams pulls valid values and ignores junk', () => {
     style: 'Individual Study',
     capacity: '1-4',
     sort: 'longest',
+    tab: 'library',
   });
 });
 
@@ -120,7 +121,15 @@ test('readFilterParams rejects malformed times and unknown capacity bands', () =
     style: '',
     capacity: '',
     sort: 'name',
+    tab: 'library',
   });
+});
+
+test('readFilterParams keeps a known tab and defaults an unknown one to library', () => {
+  expect(readFilterParams(new URLSearchParams('tab=classrooms')).tab).toBe('classrooms');
+  expect(readFilterParams(new URLSearchParams('tab=library')).tab).toBe('library');
+  expect(readFilterParams(new URLSearchParams('tab=bogus')).tab).toBe('library');
+  expect(readFilterParams(new URLSearchParams('')).tab).toBe('library');
 });
 
 test('readFilterParams keeps a known sort and defaults an unknown one to name', () => {
@@ -161,4 +170,38 @@ test('buildFilterQuery includes a non-today date and a full window', () => {
   expect(params.get('from')).toBe('09:00');
   expect(params.get('to')).toBe('11:00');
   expect(params.get('capacity')).toBe('5-8');
+});
+
+test('buildFilterQuery serializes a non-default tab and omits the default', () => {
+  const today = '2026-07-09';
+  const base = { date: today, from: '', to: '', style: '', capacity: '' };
+  expect(buildFilterQuery({ ...base, tab: 'classrooms' }, today)).toBe('tab=classrooms');
+  expect(buildFilterQuery({ ...base, tab: 'library' }, today)).toBe('');
+  expect(buildFilterQuery(base, today)).toBe('');
+});
+
+test('buildFilterQuery keeps the tab alongside other params', () => {
+  const qs = buildFilterQuery(
+    { tab: 'classrooms', date: '2026-07-10', from: '09:00', to: '', style: '', capacity: '' },
+    '2026-07-09'
+  );
+  const params = new URLSearchParams(qs);
+  expect(params.get('tab')).toBe('classrooms');
+  expect(params.get('date')).toBe('2026-07-10');
+  expect(params.get('from')).toBe('09:00');
+});
+
+test('getWindow with bookingRules off still flags inverted windows but not length', () => {
+  const state = { date: '2026-07-09', from: '09:00', to: '09:15' };
+  expect(getWindow(state, { bookingRules: false }).invalid).toBe(false);
+
+  const long = getWindow({ date: '2026-07-09', from: '09:00', to: '18:00' }, { bookingRules: false });
+  expect(long.invalid).toBe(false);
+
+  const inverted = getWindow(
+    { date: '2026-07-09', from: '11:00', to: '09:00' },
+    { bookingRules: false }
+  );
+  expect(inverted.invalid).toBe(true);
+  expect(inverted.reason).toBe('inverted');
 });

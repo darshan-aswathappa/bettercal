@@ -30,17 +30,25 @@
       <p class="status">Nothing free at this moment — check the slots below.</p>
     {:else}
       {#each freeNow as { room, range } (room.eid ?? room.name)}
-        <a
-          class="now-card"
-          href={buildBookUrl(room.bookUrl, date)}
-          target="_blank"
-          rel="noopener"
-          style="text-decoration: none; color: inherit;"
-        >
-          <div class="room-name">{room.name}</div>
-          <div class="free-for">Free for {fmtDuration(parseTs(range.end) - now)}</div>
-          <div class="until">Until {fmtTime(range.end)} · seats {room.capacity ?? '—'}</div>
-        </a>
+        {#if room.bookUrl != null}
+          <a
+            class="now-card"
+            href={buildBookUrl(room.bookUrl, date)}
+            target="_blank"
+            rel="noopener"
+            style="text-decoration: none; color: inherit;"
+          >
+            <div class="room-name">{room.name}</div>
+            <div class="free-for">Free for {fmtDuration(parseTs(range.end) - now)}</div>
+            <div class="until">Until {fmtTime(range.end)} · seats {room.capacity ?? '—'}</div>
+          </a>
+        {:else}
+          <div class="now-card">
+            <div class="room-name">{room.name}</div>
+            <div class="free-for">Free for {fmtDuration(parseTs(range.end) - now)}</div>
+            <div class="until">Until {fmtTime(range.end)}</div>
+          </div>
+        {/if}
       {/each}
     {/if}
   </div>

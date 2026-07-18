@@ -22,6 +22,7 @@
 
   const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+  let tab = $state(untrack(() => data.tab ?? 'library'));
   let date = $state(untrack(() => data.date));
   let from = $state('');
   let to = $state('');
@@ -34,9 +35,14 @@
   let now = $state(new Date());
   let favorites = $state([]);
 
+  // Per-tab stash of the last loaded payload so switching tabs re-paints
+  // instantly; a background refetch still runs on every switch.
+  const tabData = { library: null, classrooms: null };
+
   const rooms = $derived(availability?.rooms ?? []);
   const filtered = $derived(applyFilters(rooms, { style, capacity }));
-  const win = $derived(getWindow({ date, from, to }));
+  const buildings = $derived([...new Set(rooms.map((r) => r.grouping).filter(Boolean))].sort());
+  const win = $derived(getWindow({ date, from, to }, { bookingRules: tab === 'library' }));
   const windowActive = $derived(win != null);
   const invalidWindow = $derived(windowActive && win.invalid);
   const activeMinutes = $derived(activeMinutesFor(from, to));
@@ -75,9 +81,11 @@
 
   // Offer the watchlist exactly when a concrete search came up empty: a valid
   // (or end-less, which the CTA nudges about) time window on a loaded, error-free
-  // date with zero matching rooms.
+  // date with zero matching rooms. Library-only: classrooms can't be booked
+  // through LibCal, so there's nothing to watch for.
   const showWatchlistCta = $derived(
-    windowActive && !invalidWindow && !loading && !loadError && !!availability &&
+    tab === 'library' &&
+      windowActive && !invalidWindow && !loading && !loadError && !!availability &&
       windowMatches.length === 0
   );
 
@@ -111,8 +119,9 @@
   async function refetch() {
     loading = true;
     loadError = null;
+    const endpoint = tab === 'classrooms' ? '/api/classrooms/availability' : '/api/availability';
     try {
-      const res = await fetch(`/api/availability?date=${encodeURIComponent(date)}`);
+      const res = await fetch(`${endpoint}?date=${encodeURIComponent(date)}`);
       const payload = await res.json();
       if (!res.ok || !payload.ok) {
         throw new Error(payload.error || `Request failed (${res.status})`);
@@ -133,10 +142,24 @@
   // Keep the address bar shareable without adding history entries.
   $effect(() => {
     // Read deps unconditionally so the effect re-runs once onMount seeds state.
-    const qs = buildFilterQuery({ date, from, to, style, capacity, sort }, todayStr());
+    const qs = buildFilterQuery({ tab, date, from, to, style, capacity, sort }, todayStr());
     if (!browser || !hydrated) return;
     history.replaceState(history.state, '', qs ? `?${qs}` : location.pathname);
   });
+
+  function onTab(next) {
+    if (next === tab) return;
+    tabData[tab] = { availability, loadError };
+    tab = next;
+    // "style" means room style on the library tab but building on the
+    // classrooms tab, and capacity is library-only — neither carries across.
+    style = '';
+    capacity = '';
+    const stashed = tabData[next];
+    availability = stashed?.availability ?? null;
+    loadError = stashed?.loadError ?? null;
+    refetch();
+  }
 
   function onDate(value) {
     date = value || todayStr();
@@ -176,17 +199,17 @@
     from = seeded.from;
     to = seeded.to;
     style = seeded.style;
-    capacity = seeded.capacity;
+    capacity = seeded.tab === 'classrooms' ? '' : seeded.capacity;
     sort = seeded.sort;
+    const tabChanged = seeded.tab !== tab;
+    if (tabChanged) tab = seeded.tab;
 
     // The SSR payload used the server's "today"; reconcile with the browser's.
     const urlDate = params.get('date');
     const resolved =
       urlDate && DATE_RE.test(urlDate) && urlDate >= todayStr() ? urlDate : todayStr();
-    if (resolved !== date) {
-      date = resolved;
-      refetch();
-    }
+    if (resolved !== date) date = resolved;
+    if (tabChanged || resolved !== date) refetch();
 
     // URL has now been read; allow the sync effect to write from here on.
     hydrated = true;
@@ -200,6 +223,8 @@
 </script>
 
 <Filters
+  {tab}
+  {buildings}
   {date}
   {from}
   {to}
@@ -218,6 +243,31 @@
   {onPreset}
   {onClearTime}
 />
+
+<nav class="tab-bar" aria-label="Room source">
+  <div class="tab-bar-inner">
+    <button
+      type="button"
+      class="tab"
+      class:tab--active={tab === 'library'}
+      aria-pressed={tab === 'library'}
+      data-testid="tab-library"
+      onclick={() => onTab('library')}
+    >
+      Snell Library
+    </button>
+    <button
+      type="button"
+      class="tab"
+      class:tab--active={tab === 'classrooms'}
+      aria-pressed={tab === 'classrooms'}
+      data-testid="tab-classrooms"
+      onclick={() => onTab('classrooms')}
+    >
+      Classrooms
+    </button>
+  </div>
+</nav>
 
 <main>
   {#if !windowActive}

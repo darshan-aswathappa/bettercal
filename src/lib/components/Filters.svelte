@@ -11,6 +11,8 @@
   ];
 
   let {
+    tab = 'library',
+    buildings = [],
     date,
     from,
     to,
@@ -32,8 +34,8 @@
 </script>
 
 <div class="utility-strip">
-  <span class="eyebrow">Northeastern University · Snell Library</span>
-  <span class="eyebrow eyebrow-accent">Study Rooms</span>
+  <span class="eyebrow">Northeastern University · {tab === 'classrooms' ? 'Campus-wide' : 'Snell Library'}</span>
+  <span class="eyebrow eyebrow-accent">{tab === 'classrooms' ? 'Classrooms' : 'Study Rooms'}</span>
 </div>
 
 <header class="topbar">
@@ -96,23 +98,35 @@
       onclick={() => onClearTime()}>Clear time</button
     >
 
-    <label>
-      <span>Seat style</span>
-      <select value={style} onchange={(e) => onStyle(e.currentTarget.value)}>
-        <option value="">All styles</option>
-        {#each STYLES as s (s)}
-          <option value={s}>{s}</option>
-        {/each}
-      </select>
-    </label>
-    <label>
-      <span>Capacity</span>
-      <select value={capacity} onchange={(e) => onCapacity(e.currentTarget.value)}>
-        <option value="">Any size</option>
-        <option value="1-4">1–4 people</option>
-        <option value="5-8">5–8 people</option>
-      </select>
-    </label>
+    {#if tab === 'classrooms'}
+      <label>
+        <span>Building</span>
+        <select value={style} onchange={(e) => onStyle(e.currentTarget.value)}>
+          <option value="">All buildings</option>
+          {#each buildings as b (b)}
+            <option value={b}>{b}</option>
+          {/each}
+        </select>
+      </label>
+    {:else}
+      <label>
+        <span>Seat style</span>
+        <select value={style} onchange={(e) => onStyle(e.currentTarget.value)}>
+          <option value="">All styles</option>
+          {#each STYLES as s (s)}
+            <option value={s}>{s}</option>
+          {/each}
+        </select>
+      </label>
+      <label>
+        <span>Capacity</span>
+        <select value={capacity} onchange={(e) => onCapacity(e.currentTarget.value)}>
+          <option value="">Any size</option>
+          <option value="1-4">1–4 people</option>
+          <option value="5-8">5–8 people</option>
+        </select>
+      </label>
+    {/if}
     <label>
       <span>Sort by</span>
       <select value={sort} onchange={(e) => onSort(e.currentTarget.value)}>

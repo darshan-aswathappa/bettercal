@@ -137,3 +137,38 @@ test('clicking the favorite toggle emits the room to onToggleFavorite', async ()
 
   expect(onToggleFavorite).toHaveBeenCalledWith(rooms[0]);
 });
+
+const classroom = {
+  name: 'Ryder Hall 126',
+  grouping: 'Ryder Hall',
+  capacity: null,
+  bookUrl: null,
+  ranges: [{ start: '2026-07-17 07:00:00', end: '2026-07-17 17:50:00' }],
+};
+
+test('a bookUrl-less room (classroom) renders plain range pills and no book/share actions', () => {
+  render(RoomList, { rooms: [classroom], date: '2026-07-17' });
+
+  expect(screen.getByText('Ryder Hall 126')).toBeInTheDocument();
+  // The range renders as inert text, not a link.
+  expect(screen.getByText(/7:00/)).toBeInTheDocument();
+  expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /Book/ })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /copy link/i })).not.toBeInTheDocument();
+});
+
+test('a bookUrl-less room still shows the favorite toggle and window match pill', () => {
+  render(RoomList, {
+    rooms: [classroom],
+    windowActive: true,
+    win: { from: '2026-07-17 10:00:00', to: '2026-07-17 12:00:00' },
+    date: '2026-07-17',
+    favorites: [],
+    onToggleFavorite: vi.fn(),
+  });
+
+  expect(screen.getByRole('button', { name: /add ryder hall 126 to favorites/i })).toBeInTheDocument();
+  expect(screen.getByText(/✓/)).toBeInTheDocument();
+  // No LibCal booking hint for classrooms.
+  expect(screen.queryByTestId('book-hint')).not.toBeInTheDocument();
+});

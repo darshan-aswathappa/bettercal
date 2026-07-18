@@ -76,3 +76,30 @@ test('the Clear time button is hidden until a window is active', async () => {
   await rerender({ ...base, showClearTime: true });
   expect(screen.getByTestId('clear-time')).not.toHaveAttribute('hidden');
 });
+
+test('classrooms tab swaps seat style for a building dropdown and hides capacity', () => {
+  render(Filters, { ...base, tab: 'classrooms', buildings: ['Ryder Hall', 'EXP'] });
+
+  expect(screen.getByDisplayValue('All buildings')).toBeInTheDocument();
+  expect(screen.getByRole('option', { name: 'Ryder Hall' })).toBeInTheDocument();
+  expect(screen.queryByDisplayValue('All styles')).not.toBeInTheDocument();
+  expect(screen.queryByDisplayValue('Any size')).not.toBeInTheDocument();
+});
+
+test('changing the building select emits the chosen value via onStyle', async () => {
+  const onStyle = vi.fn();
+  render(Filters, { ...base, tab: 'classrooms', buildings: ['Ryder Hall', 'EXP'], onStyle });
+
+  await fireEvent.change(screen.getByDisplayValue('All buildings'), {
+    target: { value: 'Ryder Hall' },
+  });
+
+  expect(onStyle).toHaveBeenCalledWith('Ryder Hall');
+});
+
+test('classrooms tab relabels the eyebrow strip', () => {
+  render(Filters, { ...base, tab: 'classrooms', buildings: [] });
+
+  expect(screen.getByText(/Campus-wide/)).toBeInTheDocument();
+  expect(screen.getByText('Classrooms')).toBeInTheDocument();
+});

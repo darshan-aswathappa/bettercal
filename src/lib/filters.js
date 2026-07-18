@@ -54,26 +54,41 @@ export function applyFilters(rooms, { style, capacity } = {}) {
  * Read the From/To time filter. Returns null when no time window is set.
  * `from`/`to` in the result are LibCal-style "YYYY-MM-DD HH:mm:ss" strings.
  *
+ * `bookingRules` enforces LibCal's 30-minute/3-hour booking caps — meaningful
+ * only for bookable library rooms; the classrooms tab passes false since those
+ * rooms aren't LibCal-bookable and any window length is a valid search.
+ *
  * @param {{date: string, from: string, to: string}} state
+ * @param {{bookingRules?: boolean}} [options]
  */
-export function getWindow({ date, from, to } = {}) {
+export function getWindow({ date, from, to } = {}, { bookingRules = true } = {}) {
   if (!from) return null;
   const start = `${date} ${from}:00`;
   const end = to ? `${date} ${to}:00` : null;
-  const reason = windowReason(start, end);
+  const reason = windowReason(start, end, bookingRules);
   return { from: start, to: end, invalid: reason != null, reason };
 }
 
-// Classify a built window against LibCal's booking rules. Open-ended windows
-// (no end) are a search convenience, not a booking, so only the min/max caps
-// on a concrete end matter here.
-function windowReason(start, end) {
+// Classify a built window. Open-ended windows (no end) are a search
+// convenience, not a booking, so only the min/max caps on a concrete end
+// matter here — and only when LibCal's booking rules apply at all.
+function windowReason(start, end, bookingRules) {
   if (end == null) return null;
   if (end <= start) return 'inverted';
+  if (!bookingRules) return null;
   const minutes = (parseTs(end) - parseTs(start)) / 60000;
   if (minutes < MIN_BOOKING_MINUTES) return 'too-short';
   if (minutes > MAX_BOOKING_MINUTES) return 'too-long';
   return null;
+}
+
+/** The two tabs of the app; 'library' is the default and never serialized. */
+export const TABS = ['library', 'classrooms'];
+export const DEFAULT_TAB = 'library';
+
+/** Coerce an untrusted tab key (URL/query) to a known one. */
+export function normalizeTab(value) {
+  return TABS.includes(value) ? value : DEFAULT_TAB;
 }
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -93,18 +108,20 @@ export function readFilterParams(params) {
     ? capacityRaw
     : '';
   const sort = normalizeSort(params.get('sort') ?? '');
-  return { from, to, style, capacity, sort };
+  const tab = normalizeTab(params.get('tab') ?? '');
+  return { from, to, style, capacity, sort, tab };
 }
 
 /**
  * Serialize the current filter state to a query string, mirroring app.js's
  * syncUrl: omit today's date, drop "to" without "from", drop empty values.
  *
- * @param {{date, from, to, style, capacity, sort}} state
+ * @param {{tab, date, from, to, style, capacity, sort}} state
  * @param {string} today YYYY-MM-DD
  */
-export function buildFilterQuery({ date, from, to, style, capacity, sort }, today) {
+export function buildFilterQuery({ tab, date, from, to, style, capacity, sort }, today) {
   const params = new URLSearchParams();
+  if (tab && tab !== DEFAULT_TAB) params.set('tab', tab);
   if (date && date !== today) params.set('date', date);
   if (from) params.set('from', from);
   if (to && from) params.set('to', to);
