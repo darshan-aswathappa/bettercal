@@ -2,7 +2,6 @@
   import { onMount, untrack } from 'svelte';
   import { browser } from '$app/environment';
   import Filters from '$lib/components/Filters.svelte';
-  import FreeNow from '$lib/components/FreeNow.svelte';
   import RoomList from '$lib/components/RoomList.svelte';
   import WatchlistCta from '$lib/components/WatchlistCta.svelte';
   import { todayStr, windowLabel } from '$lib/format.js';
@@ -270,10 +269,6 @@
 </nav>
 
 <main>
-  {#if !windowActive && tab === 'library'}
-    <FreeNow rooms={filtered} {now} {isToday} {date} />
-  {/if}
-
   <section>
     <div class="section-head">
       <h2>{heading}</h2>
