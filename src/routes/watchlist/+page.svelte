@@ -27,7 +27,7 @@
     if (!group) return '';
     const start = `${group.date} ${group.start_time}`;
     const end = `${group.date} ${group.end_time}`;
-    return `${fmtTime(start)} – ${fmtTime(end)}`;
+    return `${fmtTime(start)} - ${fmtTime(end)}`;
   }
 
   // Polling stops 30 min before the slot; the entry stays ACTIVE until the
@@ -82,7 +82,7 @@
     <a class="subpage-back" href="/">← Rooms</a>
     <h1>Your watchlist</h1>
     <p class="subpage-sub">
-      We check LibCal for each window below and email you the moment a matching room opens —
+      We check LibCal for each window below and email you the moment a matching room opens -
       watching stops 30 minutes before the slot starts.
     </p>
   </header>
@@ -94,7 +94,7 @@
   {:else if entries.length === 0}
     <p class="status" data-testid="watchlist-empty">
       Nothing here yet. Search for a room on the
-      <a href="/">main page</a> — when a window is fully booked you can watch it from there.
+      <a href="/">main page</a> - when a window is fully booked you can watch it from there.
     </p>
   {:else}
     {#each SECTIONS as section (section.status)}

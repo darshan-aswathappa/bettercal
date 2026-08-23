@@ -8,7 +8,7 @@
   --color-red-bright: #E31837;
 
   /* Neutrals */
-  --color-black: #000000;
+  --color-black: #141414;
   --color-gray-900: #1A1A1A;
   --color-gray-700: #333333;
   --color-gray-500: #6B6B6B;
@@ -20,6 +20,7 @@
   /* Typography */
   --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
   --font-sans: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SF Mono", "Menlo", "Consolas", monospace;
   --fw-regular: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
@@ -124,6 +125,25 @@ body {
   align-items: flex-end;
 }
 
+/* Desktop: the disclosure has no visual presence of its own. The
+   outer <details> is unwrapped via display: contents, but the inner
+   content becomes its own flex row (not also display: contents) —
+   nesting two display:contents levels breaks Chrome's flex-wrap
+   item packing, collapsing every child onto its own line. */
+.filters-more {
+  display: contents;
+}
+.filters-more-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.filters-more-toggle {
+  display: none;
+}
+
 .filters label {
   display: flex;
   flex-direction: column;
@@ -197,12 +217,16 @@ body {
   border-radius: 0;
   padding: 8px 14px;
   cursor: pointer;
-  transition: border-color 120ms, color 120ms, background 120ms;
+  transition: border-color 120ms, color 120ms, background 120ms, transform 120ms;
 }
 
 .preset:hover {
   border-color: var(--color-red);
   color: var(--color-red);
+}
+
+.preset:active {
+  transform: scale(0.96);
 }
 
 .preset.active {
@@ -222,12 +246,21 @@ body {
   padding: 8px 14px;
   cursor: pointer;
   align-self: flex-end;
-  transition: border-color 120ms, color 120ms;
+  transition: border-color 120ms, color 120ms, transform 120ms;
 }
 
 .clear-time:hover {
   color: var(--color-gray-900);
   border-color: var(--color-gray-500);
+}
+
+.clear-time:active {
+  transform: scale(0.96);
+}
+
+.clear-time--hidden {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* ============================================================
@@ -258,7 +291,11 @@ body {
   padding: 7px 10px;
   cursor: pointer;
   color: var(--color-gray-700);
-  transition: border-color 120ms, color 120ms, background 120ms;
+  transition: border-color 120ms, color 120ms, background 120ms, transform 120ms;
+}
+
+.date-chip:active {
+  transform: scale(0.96);
 }
 
 .date-chip__weekday {
@@ -271,6 +308,7 @@ body {
 }
 
 .date-chip__day {
+  font-family: var(--font-mono);
   font-size: 16px;
   font-weight: var(--fw-semibold);
   line-height: 1;
@@ -321,6 +359,10 @@ body {
 
 .fav-btn:hover {
   color: var(--color-red);
+}
+
+.fav-btn:active {
+  transform: scale(0.88);
 }
 
 .fav-btn--active {
@@ -387,6 +429,10 @@ main {
   border-bottom-color: var(--color-red);
 }
 
+.tab:active {
+  color: var(--color-red);
+}
+
 .tab:focus-visible {
   outline: 2px solid var(--color-red);
   outline-offset: -2px;
@@ -416,7 +462,7 @@ section { margin-top: 40px; }
 .count {
   background: var(--color-red);
   color: var(--color-white);
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 12px;
   font-weight: var(--fw-bold);
   border-radius: 0;
@@ -445,12 +491,16 @@ section { margin-top: 40px; }
   font-size: 12px;
   font-weight: var(--fw-medium);
   white-space: nowrap;
-  transition: color 120ms, border-color 120ms;
+  transition: color 120ms, border-color 120ms, transform 120ms;
 }
 
 .share-btn:hover {
   color: var(--color-gray-900);
   border-color: var(--color-gray-500);
+}
+
+.share-btn:active {
+  transform: scale(0.96);
 }
 
 .share-btn--copied {
@@ -581,18 +631,24 @@ a.range-pill:hover {
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: var(--fw-semibold);
-  color: var(--color-white);
-  background: var(--color-red);
+  color: var(--color-red);
+  background: transparent;
   border: 1px solid var(--color-red);
   border-radius: 0;
   padding: 8px 16px;
   text-decoration: none;
-  transition: background 120ms, border-color 120ms;
+  transition: background 120ms, border-color 120ms, color 120ms, transform 120ms;
 }
 
-.book-link:hover {
+.book-link:hover,
+.book-link:focus-visible {
+  color: var(--color-white);
   background: var(--color-red-hover);
   border-color: var(--color-red-hover);
+}
+
+.book-link:active {
+  transform: scale(0.97);
 }
 
 /* ============================================================
@@ -706,6 +762,49 @@ footer {
     width: 100%;
     gap: 14px 10px;
   }
+
+  /* The date strip stays visible; everything else collapses behind
+     a disclosure so the header doesn't dominate the screen. */
+  .filters-more {
+    display: block;
+    width: 100%;
+  }
+  .filters-more-content {
+    display: none;
+  }
+  .filters-more-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    justify-content: space-between;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: var(--fw-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-gray-500);
+    cursor: pointer;
+    padding: 10px 0;
+    border-top: 1px solid var(--color-gray-200);
+    list-style: none;
+  }
+  .filters-more-toggle::-webkit-details-marker {
+    display: none;
+  }
+  .filters-more-toggle svg {
+    transition: transform 120ms;
+  }
+  .filters-more[open] .filters-more-toggle svg {
+    transform: rotate(180deg);
+  }
+  .filters-more[open] .filters-more-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 10px;
+    padding-top: 14px;
+  }
+
   /* Three even columns: Date/From/To on one row, selects on another. */
   .filters label {
     flex: 1 1 calc(33.333% - 7px);
@@ -939,12 +1038,13 @@ footer {
 }
 
 .wl-date {
+  font-family: var(--font-mono);
   font-size: 14px;
   font-weight: var(--fw-semibold);
   color: var(--color-gray-900);
 }
 
-.wl-window { font-size: 14px; color: var(--color-gray-700); }
+.wl-window { font-family: var(--font-mono); font-size: 14px; color: var(--color-gray-700); }
 
 .wl-chip {
   font-size: 12px;

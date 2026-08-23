@@ -71,7 +71,7 @@
 <div class="watchlist-cta" data-testid="watchlist-cta">
   {#if !win?.to}
     <p class="wl-hint">
-      Set an end time and SnellView can watch this window for you — you'll get an email if a
+      Set an end time and SnellView can watch this window for you - you'll get an email if a
       matching room opens up.
     </p>
   {:else if joined}
@@ -82,7 +82,7 @@
     </p>
   {:else}
     <p class="wl-lead">
-      Want {fmtTime(win.from)} – {fmtTime(win.to)}? Join the watchlist and we'll email you if a
+      Want {fmtTime(win.from)} - {fmtTime(win.to)}? Join the watchlist and we'll email you if a
       matching room frees up.
     </p>
     <form class="wl-form" onsubmit={submit}>

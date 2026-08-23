@@ -26,8 +26,8 @@ export const MAX_BOOKING_MINUTES = 180;
 
 const WINDOW_ERRORS = {
   inverted: 'End time must be after start time.',
-  'too-short': `LibCal needs at least ${MIN_BOOKING_MINUTES} minutes — widen your window.`,
-  'too-long': `LibCal caps bookings at 3 hours — shorten your window.`,
+  'too-short': `LibCal needs at least ${MIN_BOOKING_MINUTES} minutes - widen your window.`,
+  'too-long': `LibCal caps bookings at 3 hours - shorten your window.`,
 };
 
 /** User-facing message for a getWindow() reason, or '' when the window is fine. */

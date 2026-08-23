@@ -33,7 +33,7 @@ export async function POST({ request }) {
     });
     if (!cancelled || cancelled === 0) {
       return json(
-        { ok: false, error: 'Nothing to cancel — the entry may already be finished or the link is invalid.' },
+        { ok: false, error: 'Nothing to cancel - the entry may already be finished or the link is invalid.' },
         { status: 404 }
       );
     }
