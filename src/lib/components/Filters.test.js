@@ -71,10 +71,10 @@ test('clicking a day in the strip emits its date via onDate', async () => {
 
 test('the Clear time button is hidden until a window is active', async () => {
   const { rerender } = render(Filters, { ...base, showClearTime: false });
-  expect(screen.getByTestId('clear-time')).toHaveAttribute('hidden');
+  expect(screen.getByTestId('clear-time')).toHaveAttribute('aria-hidden', 'true');
 
   await rerender({ ...base, showClearTime: true });
-  expect(screen.getByTestId('clear-time')).not.toHaveAttribute('hidden');
+  expect(screen.getByTestId('clear-time')).toHaveAttribute('aria-hidden', 'false');
 });
 
 test('classrooms tab swaps seat style for a building dropdown and hides capacity', () => {

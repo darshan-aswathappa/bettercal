@@ -9,7 +9,7 @@
 
   function windowText(group) {
     if (!group) return '';
-    return `${fmtTime(`${group.date} ${group.start_time}`)} – ${fmtTime(`${group.date} ${group.end_time}`)}`;
+    return `${fmtTime(`${group.date} ${group.start_time}`)} - ${fmtTime(`${group.date} ${group.end_time}`)}`;
   }
 
   async function cancel(all) {
@@ -71,7 +71,7 @@
           </button>
         </div>
       {:else}
-        <p class="status">This watchlist is no longer active — nothing to cancel.</p>
+        <p class="status">This watchlist is no longer active - nothing to cancel.</p>
       {/if}
       {#if error}
         <p class="status error" role="alert">{error}</p>

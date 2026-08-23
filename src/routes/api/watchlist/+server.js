@@ -22,8 +22,8 @@ const RPC_ERRORS = {
   limit_email: { status: 429, error: 'That email already has 10 active watchlists. Cancel one first.' },
   limit_token: { status: 429, error: 'This browser already has 10 active watchlists. Cancel one first.' },
   limit_ip: { status: 429, error: 'Too many watchlists created recently. Try again in an hour.' },
-  too_late: { status: 400, error: 'That window starts too soon — watchlists close 30 minutes before the start time.' },
-  already_found: { status: 409, error: 'A room was already found for this window — search again, it may still be free.' },
+  too_late: { status: 400, error: 'That window starts too soon - watchlists close 30 minutes before the start time.' },
+  already_found: { status: 409, error: 'A room was already found for this window - search again, it may still be free.' },
 };
 
 /** Validate the create payload; returns an error string or null. */

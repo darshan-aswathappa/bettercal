@@ -69,12 +69,12 @@
           {#if windowActive && win}
             <span class="range-pill range-pill--match">
               {win.to
-                ? `✓ ${fmtTime(win.from)} – ${fmtTime(win.to)}`
+                ? `✓ ${fmtTime(win.from)} - ${fmtTime(win.to)}`
                 : `✓ free from ${fmtTime(win.from)}`}
             </span>
             {#if room.ranges[0]}
               <span class="range-context">
-                open {fmtTime(room.ranges[0].start)} – {fmtTime(room.ranges[0].end)}
+                open {fmtTime(room.ranges[0].start)} - {fmtTime(room.ranges[0].end)}
               </span>
             {/if}
           {:else}
@@ -85,16 +85,16 @@
                   href={buildBookUrl(room.bookUrl, r.start)}
                   target="_blank"
                   rel="noopener"
-                  title={`Free for ${fmtDuration(parseTs(r.end) - parseTs(r.start))} — book from ${fmtTime(r.start)}`}
+                  title={`Free for ${fmtDuration(parseTs(r.end) - parseTs(r.start))} - book from ${fmtTime(r.start)}`}
                 >
-                  {fmtTime(r.start)} – {fmtTime(r.end)}
+                  {fmtTime(r.start)} - {fmtTime(r.end)}
                 </a>
               {:else}
                 <span
                   class="range-pill"
                   title={`Free for ${fmtDuration(parseTs(r.end) - parseTs(r.start))}`}
                 >
-                  {fmtTime(r.start)} – {fmtTime(r.end)}
+                  {fmtTime(r.start)} - {fmtTime(r.end)}
                 </span>
               {/if}
             {/each}

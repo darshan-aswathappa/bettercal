@@ -48,7 +48,7 @@ export function roundUpToQuarter(d) {
 
 export function windowLabel(win) {
   const fromLabel = fmtTime(win.from);
-  return win.to ? `${fromLabel} – ${fmtTime(win.to)}` : `from ${fromLabel}`;
+  return win.to ? `${fromLabel} - ${fmtTime(win.to)}` : `from ${fromLabel}`;
 }
 
 // LibCal defaults every booking to 1 hour once you click a start slot, so a

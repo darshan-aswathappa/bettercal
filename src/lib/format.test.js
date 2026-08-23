@@ -55,7 +55,7 @@ test('buildBookUrl appends the date only when given one', () => {
 });
 
 test('windowLabel shows a range with an end and "from" without one', () => {
-  expect(windowLabel({ from: '2026-07-09 09:00:00', to: '2026-07-09 11:00:00' })).toContain('–');
+  expect(windowLabel({ from: '2026-07-09 09:00:00', to: '2026-07-09 11:00:00' })).toContain('-');
   expect(windowLabel({ from: '2026-07-09 09:00:00', to: null })).toMatch(/^from /);
 });
 
